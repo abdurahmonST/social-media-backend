@@ -1,0 +1,55 @@
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Post } from "./entities/post.entity";
+import { CreatePostDto } from "./dto/create-post.dto";
+import { UpdatePostDto } from "./dto/update-post.dto";
+import { User } from "../user/entities/user.entity";
+
+@Injectable()
+export class PostService {
+    constructor(
+        @InjectRepository(Post)
+        private readonly postRepo: Repository<Post>,
+    ) { }
+
+    // Post yaratish (login qilgan user bilan)
+    async createPost(user: User, dto: CreatePostDto) {
+        const post = this.postRepo.create({
+            ...dto,
+            author: user,
+        });
+        return this.postRepo.save(post);
+    }
+
+    // Barcha postlarni olish
+    findAll() {
+        return this.postRepo.find({
+            relations: ['author'], // author ma'lumotini olish
+            select: ["id", "text", "photoUrl", "videoUrl", "likesCount", "commentsCount", "createdAt", "updatedAt"]
+        });
+    }
+
+    // Bitta postni olish
+    async findOne(id: string) {
+        const post = await this.postRepo.findOne({
+            where: { id },
+            relations: ['author']
+        });
+        if (!post) throw new NotFoundException("Post not found");
+        return post;
+    }
+
+    // Postni yangilash
+    async update(id: string, dto: UpdatePostDto) {
+        await this.findOne(id);
+        await this.postRepo.update(id, dto);
+        return this.findOne(id);
+    }
+
+    // Postni o‘chirish
+    async remove(id: string) {
+        const post = await this.findOne(id);
+        return this.postRepo.remove(post);
+    }
+}
