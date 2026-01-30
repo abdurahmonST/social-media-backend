@@ -15,12 +15,14 @@ export class AuthService {
     ) {}
 
     async signup(dto: SignUpDto) {
-        const { email, username, password } = dto;
+        const { email, username, password, firstName, lastName } = dto;
         const hashedPassword = await bcrypt.hash(password, 10)
 
         const user = this.userRepository.create({
             email,
             username,
+            firstName,
+            lastName,
             password: hashedPassword,
         })
 
@@ -30,12 +32,20 @@ export class AuthService {
 
          return {
             "token": token,
-            "Data": user
+            "data": {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                avatarUrl: user.avatarUrl,
+                role: user.role,
+            }
          };
     }
 
     async login(dto: LoginDto) {
-        const user = await this.userRepository.findOne({ where: {email: dto.email}, select: ["id", "password", "email", "username"] });
+        const user = await this.userRepository.findOne({ where: {email: dto.email}, select: ["id", "password", "email", "username", "firstName", "lastName", "bio", 'birthday'] });
         if(!user) {
             throw new UnauthorizedException('User not found');
         }
@@ -48,8 +58,8 @@ export class AuthService {
         const token = this.jwtService.sign({ userId: user.id })
 
         return {
-            "token: ": token,
-            "data: ": user
+            "token": token,
+            "data": user
         };
     }
 

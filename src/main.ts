@@ -22,7 +22,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // Port
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 4000;
   await app.listen(PORT);
 
   console.log(`Server Link: http://localhost:${PORT}/api`);

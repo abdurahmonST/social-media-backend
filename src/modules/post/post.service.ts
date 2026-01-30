@@ -22,32 +22,38 @@ export class PostService {
         return this.postRepo.save(post);
     }
 
-    // Barcha postlarni olish
-    findAll() {
-        return this.postRepo.find({
-            relations: ['author'], // author ma'lumotini olish
-            select: ["id", "text", "photoUrl", "videoUrl", "likesCount", "commentsCount", "createdAt", "updatedAt"]
-        });
+    // Barcha postlarni olish (comments va likes bilan)
+    async findAll() {
+        return this.postRepo
+            .createQueryBuilder("post")
+            .leftJoinAndSelect("post.author", "author")
+            .leftJoinAndSelect("post.comments", "comments")
+            .leftJoinAndSelect("comments.user", "commentUser")
+            .leftJoinAndSelect("post.likes", "likes")
+            .getMany();
     }
 
-    // Bitta postni olish
+    // Bitta postni olish (comments va likes bilan)
     async findOne(id: string) {
-        const post = await this.postRepo.findOne({
-            where: { id },
-            relations: ['author']
-        });
+        const post = await this.postRepo
+            .createQueryBuilder("post")
+            .leftJoinAndSelect("post.author", "author")
+            .leftJoinAndSelect("post.comments", "comments")
+            .leftJoinAndSelect("comments.user", "commentUser")
+            .leftJoinAndSelect("post.likes", "likes")
+            .where("post.id = :id", { id })
+            .getOne();
+
         if (!post) throw new NotFoundException("Post not found");
         return post;
     }
 
-    // Postni yangilash
     async update(id: string, dto: UpdatePostDto) {
         await this.findOne(id);
         await this.postRepo.update(id, dto);
         return this.findOne(id);
     }
 
-    // Postni o‘chirish
     async remove(id: string) {
         const post = await this.findOne(id);
         return this.postRepo.remove(post);
