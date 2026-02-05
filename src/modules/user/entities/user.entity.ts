@@ -1,4 +1,5 @@
 import { Comment } from "src/modules/comment/entities/comment.entity";
+import { Follow } from "src/modules/follow/entities/follow.entity";
 import { Post } from "src/modules/post/entities/post.entity";
 import {
     Column,
@@ -59,6 +60,13 @@ export class User {
 
     @OneToMany(() => Comment, (comment) => comment.user)
     comments: Comment[];
+
+    // Follow relations
+    @OneToMany(() => Follow, (follow) => follow.follower)
+    following: Follow[];
+
+    @OneToMany(() => Follow, (follow) => follow.following)
+    followers: Follow[];
 
     // Timestamps
     @CreateDateColumn()

@@ -6,6 +6,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CommentsModule } from './modules/comment/comment.module';
 import { CommentLikeModule } from './modules/comment-like/comment-like.module';
 import { PostLikeModule } from './modules/post-like/post.like.module';
+import { FollowModule } from './modules/follow/follow.module';
 
 @Module({
   imports: [ 
@@ -16,7 +17,7 @@ import { PostLikeModule } from './modules/post-like/post.like.module';
     CommentsModule,
     CommentLikeModule,
     AuthModule,
-
+    FollowModule,
   ]
 })
 export class AppModule {}
