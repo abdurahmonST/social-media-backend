@@ -11,21 +11,28 @@ import {
 import { CommentsService } from './comment.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateCommentDto } from './dto/create-comment';
-import { User } from '../user/entities/user.entity';
+// import { User } from '../user/entities/user.entity';
 import { UpdateCommentDto } from './dto/update-comment';
-import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { AuthUser } from 'src/auth/types/auth-user.type';
+import { User } from 'src/decorators/user.decorator';
+import { UserService } from '../user/user.service';
+// import { CurrentUser } from 'src/decorators/current-user.decorator';
 
 @Controller('comments')
 export class CommentsController {
-    constructor(private readonly commentsService: CommentsService) { }
+    constructor(
+        private readonly commentsService: CommentsService,
+        private userService: UserService,
+    ) { }
 
     @UseGuards(JwtAuthGuard)
     @Post()
-    create(
+    async create(
         @Body() dto: CreateCommentDto,
-        @CurrentUser() user: User,
+        @User() user: AuthUser,
     ) {
-        return this.commentsService.create(dto, user);
+        const fullUser = await this.userService.findById(user.id)
+        return this.commentsService.create(dto, fullUser);
     }
 
     @Get('post/:postId')
@@ -35,17 +42,22 @@ export class CommentsController {
 
     @UseGuards(JwtAuthGuard)
     @Patch(':id')
-    update(
+    async update(
         @Param('id') id: string,
         @Body() dto: UpdateCommentDto,
-        @CurrentUser() user: User,
+        @User() user: AuthUser,
     ) {
-        return this.commentsService.update(id, dto, user);
+        const fullUser = await this.userService.findById(user.id)
+        return this.commentsService.update(id, dto, fullUser);
     }
 
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
-    remove(@Param('id') id: string, @CurrentUser() user: User) {
-        return this.commentsService.remove(id, user);
+    async remove(
+        @Param('id') id: string, 
+        @User() user: AuthUser
+    ) {
+        const fullUser = await this.userService.findById(user.id)
+        return this.commentsService.remove(id, fullUser);
     }
 }

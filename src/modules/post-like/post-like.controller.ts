@@ -1,30 +1,42 @@
 import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { PostLikeService } from './post-like.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CurrentUser } from 'src/decorators/current-user.decorator';
-import { User } from '../user/entities/user.entity';
+import { User } from 'src/decorators/user.decorator';
+import { UserService } from '../user/user.service';
+import { AuthUser } from 'src/auth/types/auth-user.type';
 
 @Controller('post-likes')
 export class PostLikeController {
-    constructor(private readonly likeService: PostLikeService) { }
+    constructor(
+        private readonly likeService: PostLikeService,
+        private readonly userService: UserService, // full User entity olish uchun
+    ) { }
 
-    // 👍 toggle like
+    // 👍 Toggle like
     @UseGuards(JwtAuthGuard)
     @Post(':postId')
-    toggleLike(@Param('postId') postId: string, @CurrentUser() user: User) {
-        return this.likeService.toggle(postId, user);
+    async toggleLike(
+        @Param('postId') postId: string,
+        @User() user: AuthUser,
+    ) {
+        const fullUser = await this.userService.findById(user.id); // full entity
+        return this.likeService.toggle(postId, fullUser);
     }
 
-    // 🔢 like count
+    // 🔢 Like count
     @Get(':postId/count')
     count(@Param('postId') postId: string) {
         return this.likeService.count(postId);
     }
 
-    // ❤️ user like qilganmi
+    // ❤️ User like qilganmi
     @UseGuards(JwtAuthGuard)
     @Get(':postId/is-liked')
-    isLiked(@Param('postId') postId: string, @CurrentUser() user: User) {
-        return this.likeService.isLiked(postId, user.id);
+    async isLiked(
+        @Param('postId') postId: string,
+        @User() user: AuthUser,
+    ) {
+        const fullUser = await this.userService.findById(user.id); // full entity
+        return this.likeService.isLiked(postId, fullUser.id);
     }
 }
