@@ -54,6 +54,9 @@ export class User {
     @Column({ type: 'enum', enum: ['user', 'admin'], default: 'user' })
     role: UserRole;
 
+    @Column({ nullable: true })
+    refreshToken?: string;
+
     // Relations
     @OneToMany(() => Post, (post) => post.author)
     posts: Post[];
